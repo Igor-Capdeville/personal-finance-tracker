@@ -2,6 +2,7 @@ import sqlite3
 import os
 import logging
 import datetime
+from main import db_file
 
 # Global connection and cursor that will be used across functions
 conn = None
@@ -83,8 +84,12 @@ def create_dbtable(table_name, columns):
     global conn, cursor
     if not conn or not cursor:
         logger.error("Database connection not initialized")
-        return False
-    
+        logger.error(f"Error creating table {table_name}: {e}")
+        logger.error(f"Attempting to initialize database connection ...")
+        if not init_dbconnection(db_file):
+            logger.error(f"Error initializing database connection: {e} from create_dbtable function")
+            logger.error(f"Exiting program ...")
+            exit()
     try:
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
         cursor.execute(query)
@@ -96,17 +101,7 @@ def create_dbtable(table_name, columns):
         return False
 
 def insert_dbrecord(table_name, column_values):
-    """
-    Insert a record into the specified table
-    :param table_name: name of the table
-    :param column_values: dictionary of column names and values
-    :return: ID of the inserted row or None if error
-    """
-    global conn, cursor
-    if not conn or not cursor:
-        logger.error("Database connection not initialized")
-        return None
-    
+   
     columns = ', '.join(column_values.keys())
     placeholders = ', '.join(['?' for _ in column_values])
     values = tuple(column_values.values())
@@ -123,15 +118,8 @@ def insert_dbrecord(table_name, column_values):
         logger.error(f"Error inserting into {table_name}: {e}")
         return None
 
+"""
 def update_dbrecord(table_name, column_values, condition, condition_params):
-    """
-    Update records in the specified table
-    :param table_name: name of the table
-    :param column_values: dictionary of column names and new values
-    :param condition: WHERE clause for the update
-    :param condition_params: parameters for the condition
-    :return: Number of rows updated or None if error
-    """
     global conn, cursor
     if not conn or not cursor:
         logger.error("Database connection not initialized")
@@ -151,6 +139,7 @@ def update_dbrecord(table_name, column_values, condition, condition_params):
     except sqlite3.Error as e:
         logger.error(f"Error updating {table_name}: {e}")
         return None
+"""
 
 def delet_dbrecord(table_name, condition, params):
     """
